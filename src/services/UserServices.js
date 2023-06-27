@@ -1,8 +1,14 @@
 import apiClient from "./services";
 
 export default {
-  getUser() {
+  getUser(id) {
+    return apiClient.get("users/" + id);
+  },
+  getUsers() {
     return apiClient.get("users");
+  },
+  getClerks() {
+    return apiClient.get("clerks");
   },
   getUserSubscriptions(id) {
     return apiClient.get("users/" + id + "/subscriptions/");

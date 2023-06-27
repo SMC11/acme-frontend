@@ -3,12 +3,12 @@ import { onMounted } from "vue";
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import ItineraryCard from "../components/ItineraryCardComponent.vue";
-import ItineraryServices from "../services/ItineraryServices.js";
+import UserServices from "../services/UserServices";
 import EmailServices from "../services/EmailServices";
 
 const router = useRouter();
 const route = useRoute();
-const itineraries = ref([]);
+const clerks = ref([]);
 const itinerariesList = [ref([]), ref([]), ref([])];
 const subscribedItinerariesList = [ref([]), ref([]), ref([])];
 
@@ -48,23 +48,19 @@ async function mounted(){
   subscribedItinerariesList[0].value = [];
   subscribedItinerariesList[1].value = [];
   subscribedItinerariesList[2].value = [];
-  await getItineraries();
+  await getClerks();
   user.value = JSON.parse(localStorage.getItem("user"));
   role.value = user.value.role;
   
 }
 
-async function getItineraries() {
+async function getClerks() {
   user.value = JSON.parse(localStorage.getItem("user"));
   console.log(user.value);
-  if (user.value !== null && user.value.role > 0) {
-    await ItineraryServices.getItineraries()
+  if (user.value !== null && user.value.role > 1) {
+    await UserServices.getClerks()
       .then((response) => {
-        itineraries.value = response.data;
-        for(let i = 0; i < response.data.length; i++){
-          let index = i%3;
-          itinerariesList[index].value.push(response.data[i]);
-        }
+        clerks.value = response.data;
       })
       .catch((error) => {
         console.log(error);
@@ -169,7 +165,7 @@ function navigateToItinerary(itineraryId) {
 
 
 function openAdd() {
-  router.push({ name: "createitinerary" });
+  router.push({ name: "createclerk" });
 }
 
 function viewHotels() {
@@ -195,48 +191,54 @@ function closeSnackBar() {
           </v-card-title> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="openAdd()"
-            >Create Itinerary</v-btn> -->
+          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="viewSites()"
+            >View Sites</v-btn> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
           <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="viewHotels()"
             >View Hotels</v-btn> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="viewSites()"
-            >View Sites</v-btn> -->
+          <v-btn v-if="user !== null && role > 1" color="accent" @click="openAdd()"
+            >Create Clerk</v-btn>
         </v-col>
       </v-row>
+      <v-card-title class="pl-0 text-h4 font-weight-bold"
+            >Clerks
+          </v-card-title>
       <v-row class="mb-4">
-        <v-col cols="4">
-      <ItineraryCard
-        v-for="itinerary in itinerariesList[0].value"
-        :key="itinerary.id"
-        :itinerary="itinerary"
-        @dblclick="navigateToItinerary(itinerary.id)"
-        @delete-itinerary="deleteItinerary"
-      />
+        <v-col cols="11">
+      
     </v-col>
-    
-        <v-col cols="4">
-      <ItineraryCard
-        v-for="itinerary in itinerariesList[1].value"
-        :key="itinerary.id"
-        :itinerary="itinerary"
-        @dblclick="navigateToItinerary(itinerary.id)"
-        @delete-itinerary="deleteItinerary"
-      />
-    </v-col>
-    
-        <v-col cols="4">
-      <ItineraryCard
-        v-for="itinerary in itinerariesList[2].value"
-        :key="itinerary.id"
-        :itinerary="itinerary"
-        @dblclick="navigateToItinerary(itinerary.id)"
-        @delete-itinerary="deleteItinerary"
-      />
-    </v-col>
+    <v-table theme="dark">
+    <thead>
+      <tr>
+        <th class="text-left">
+          First Name
+        </th>
+        <th class="text-left">
+          Last Name
+        </th>
+        <th class="text-left">
+          Email
+        </th>
+        <th class="text-left">
+          Phone
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        v-for="clerk in clerks"
+        :key="clerk.id"
+      >
+        <td>{{ clerk.firstName }}</td>
+        <td>{{ clerk.lastName }}</td>
+        <td>{{ clerk.email }}</td>
+        <td>{{ clerk.phoneNumber }}</td>
+      </tr>
+    </tbody>
+  </v-table>
     </v-row>
 
       <v-row align="center" class="mb-4">
