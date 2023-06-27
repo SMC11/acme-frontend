@@ -189,25 +189,22 @@ function closeSnackBar() {
   <v-container>
     <div id="body">
       <v-row align="center" class="mb-4">
-        <v-col cols="6"
-          ><v-card-title class="pl-0 text-h4 font-weight-bold"
+        <v-col cols="6">
+          <!-- <v-card-title class="pl-0 text-h4 font-weight-bold"
             >Itineraries For Destinations
-          </v-card-title>
+          </v-card-title> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <v-btn v-if="user !== null && role > 0" color="accent" @click="openAdd()"
-            >Create Itinerary</v-btn
-          >
+          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="openAdd()"
+            >Create Itinerary</v-btn> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <v-btn v-if="user !== null && role > 0" color="accent" @click="viewHotels()"
-            >View Hotels</v-btn
-          >
+          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="viewHotels()"
+            >View Hotels</v-btn> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <v-btn v-if="user !== null && role > 0" color="accent" @click="viewSites()"
-            >View Sites</v-btn
-          >
+          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="viewSites()"
+            >View Sites</v-btn> -->
         </v-col>
       </v-row>
       <v-row class="mb-4">
@@ -243,16 +240,14 @@ function closeSnackBar() {
     </v-row>
 
       <v-row align="center" class="mb-4">
-        <v-col cols="10"
-          >
-          <v-card-title v-if="user !== null && role == 0" class="pl-0 text-h4 font-weight-bold"
+        <v-col cols="10">
+          <!-- <v-card-title v-if="user !== null && role == 0" class="pl-0 text-h4 font-weight-bold"
             >Subscribed Itineraries
-          </v-card-title>
+          </v-card-title> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <v-btn v-if="user !== null && role > 0" color="accent" @click="openAdd()"
-            >Create Itinerary</v-btn
-          >
+          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="openAdd()"
+            >Create Itinerary</v-btn> -->
         </v-col>
       </v-row>
       <v-row v-if="user !== null && role == 0" class="mb-4">
