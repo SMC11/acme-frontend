@@ -23,15 +23,7 @@ const snackbar = ref({
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   if(user.value == null){
-    let userData = {
-      firstName: "Guest",
-      lastName: "User",
-      email: "guest@localhost.com",
-      role: -1,
-      userId: 0,
-    };
-    window.localStorage.setItem("user", JSON.stringify(userData));
-    user.value = JSON.parse(localStorage.getItem("user"));
+    router.push({ name: "login" });
   }
   if(route.query.redirect !== undefined){
     var redirectParams = JSON.parse(decodeURI(route.query.redirect));
@@ -178,6 +170,9 @@ function viewSites() {
 function closeSnackBar() {
   snackbar.value.value = false;
 }
+function navigateToEdit(clerkId) {
+  router.push({ name: "editclerk", params: { id: clerkId } });
+}
 
 </script>
 
@@ -225,6 +220,9 @@ function closeSnackBar() {
         <th class="text-left">
           Phone
         </th>
+        <th class="text-left">
+          Actions
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -236,6 +234,18 @@ function closeSnackBar() {
         <td>{{ clerk.lastName }}</td>
         <td>{{ clerk.email }}</td>
         <td>{{ clerk.phoneNumber }}</td>
+        <td><v-icon
+            v-if="user !== null"
+            size="small"
+            icon="mdi-delete"
+            @click="handleDelete(clerk.id)"
+          ></v-icon>&nbsp;
+          <v-icon
+            v-if="user !== null"
+            size="small"
+            icon="mdi-pencil"
+            @click="navigateToEdit(clerk.id)"
+          ></v-icon></td>
       </tr>
     </tbody>
   </v-table>

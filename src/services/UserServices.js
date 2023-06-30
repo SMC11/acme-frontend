@@ -22,6 +22,9 @@ export default {
   addUser(user) {
     return apiClient.post("users", user);
   },
+  updateUser(id, user) {
+    return apiClient.put("users/" + id, user);
+  },
   loginUser(user) {
     console.log(user);
     return apiClient.post("login", user.value, {
