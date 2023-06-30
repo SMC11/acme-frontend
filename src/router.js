@@ -74,9 +74,9 @@ const router = createRouter({
       component: () => import("./views/CreateSite.vue"),
     },
     {
-      path: "/editsite/:id",
-      name: "editsite",
-      component: () => import("./views/EditSite.vue"),
+      path: "/editclerk/:id",
+      name: "editclerk",
+      component: () => import("./views/EditClerk.vue"),
     },
     {
       path: "/viewsites",

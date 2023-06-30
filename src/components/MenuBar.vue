@@ -28,11 +28,6 @@ function logout() {
   router.push({ name: "login" });
 }
 
-function logoutGuest() {
-  localStorage.removeItem("user");
-  user.value = null;
-  router.push({ name: "login" });
-}
 </script>
 
 <template>
