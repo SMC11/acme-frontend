@@ -10,6 +10,9 @@ export default {
   getClerks() {
     return apiClient.get("clerks");
   },
+  getDrivers() {
+    return apiClient.get("drivers");
+  },
   getUserSubscriptions(id) {
     return apiClient.get("users/" + id + "/subscriptions/");
   },
@@ -21,6 +24,9 @@ export default {
   },
   addUser(user) {
     return apiClient.post("users", user);
+  },
+  deleteUser(userId) {
+    return apiClient.delete("users/" + userId);
   },
   updateUser(id, user) {
     return apiClient.put("users/" + id, user);

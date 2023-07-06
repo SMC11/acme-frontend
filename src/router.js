@@ -34,6 +34,11 @@ const router = createRouter({
       component: () => import("./views/CreateClerk.vue"),
     },
     {
+      path: "/createdriver",
+      name: "createdriver",
+      component: () => import("./views/CreateDriver.vue"),
+    },
+    {
       path: "/createhotel",
       name: "createhotel",
       component: () => import("./views/CreateHotel.vue"),
