@@ -219,6 +219,26 @@ function navigateToEdit(clerkId) {
 function openAddCustomer() {
   router.push({ name: "createcustomer" });
 }
+function navigateToEditCustomer(customerId) {
+  router.push({ name: "editcustomer", params: { id: customerId } });
+}
+
+async function handleDeleteCustomer(customerId) {
+  // await sendEmail(customerId);
+  await CustomerServices.deleteCustomer(customerId)
+  .then((response) => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = response.data.message;
+      mounted();
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+}
 
 function openAddDriver() {
   router.push({ name: "createdriver" });
@@ -393,7 +413,18 @@ function openAddDriver() {
               <td>{{ customer.address }}</td>
               <td>{{ customer.instructions }}</td>
               <td>{{ customer.phoneNumber }}</td>
-              <td></td>
+              <td><v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-delete"
+                  @click="handleDeleteCustomer(customer.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-pencil"
+                  @click="navigateToEditCustomer(customer.id)"
+                ></v-icon></td>
             </tr>
           </tbody>
         </v-table>
