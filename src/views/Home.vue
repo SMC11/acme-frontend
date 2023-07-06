@@ -9,6 +9,7 @@ import EmailServices from "../services/EmailServices";
 const router = useRouter();
 const route = useRoute();
 const clerks = ref([]);
+const drivers = ref([]);
 const itinerariesList = [ref([]), ref([]), ref([])];
 const subscribedItinerariesList = [ref([]), ref([]), ref([])];
 
@@ -41,8 +42,11 @@ async function mounted(){
   subscribedItinerariesList[1].value = [];
   subscribedItinerariesList[2].value = [];
   await getClerks();
+  await getDrivers();
   user.value = JSON.parse(localStorage.getItem("user"));
   role.value = user.value.role;
+  console.log(user.value);
+  console.log(role.value);
   
 }
 
@@ -94,9 +98,27 @@ async function getClerks() {
 }
 
 
-async function deleteItinerary(itineraryId) {
-  await sendEmail(itineraryId);
-  await ItineraryServices.deleteItinerary(itineraryId)
+async function getDrivers() {
+  user.value = JSON.parse(localStorage.getItem("user"));
+  console.log(user.value);
+  if (user.value !== null && user.value.role > 1) {
+    await UserServices.getDrivers()
+      .then((response) => {
+        drivers.value = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+        snackbar.value.value = true;
+        snackbar.value.color = "error";
+        snackbar.value.text = error.response.data.message;
+      });
+  }
+}
+
+
+async function handleDelete(clerkId) {
+  // await sendEmail(clerkId);
+  await UserServices.deleteUser(clerkId)
   .then((response) => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
@@ -160,6 +182,7 @@ function openAdd() {
   router.push({ name: "createclerk" });
 }
 
+
 function viewHotels() {
   router.push({ name: "viewhotels" });
 }
@@ -173,7 +196,12 @@ function closeSnackBar() {
 function navigateToEdit(clerkId) {
   router.push({ name: "editclerk", params: { id: clerkId } });
 }
-
+function openAddDriver() {
+  router.push({ name: "createdriver" });
+}
+// function navigateToEditDriver(clerkId) {
+//   router.push({ name: "editdriver", params: { id: clerkId } });
+// }
 </script>
 
 <template>
@@ -190,66 +218,119 @@ function navigateToEdit(clerkId) {
             >View Sites</v-btn> -->
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="viewHotels()"
-            >View Hotels</v-btn> -->
-        </v-col>
-        <v-col class="d-flex justify-end" cols="2">
           <v-btn v-if="user !== null && role > 1" color="accent" @click="openAdd()"
             >Create Clerk</v-btn>
         </v-col>
+        <v-col class="d-flex justify-end" cols="2">
+          <v-btn v-if="user !== null && role > 1" color="accent" @click="openAddDriver()"
+            >Create Driver</v-btn>
+        </v-col>
       </v-row>
-      <v-card-title class="pl-0 text-h4 font-weight-bold"
+      <v-card-title v-if="user !== null && role > 1" class="pl-0 text-h4 font-weight-bold"
             >Clerks
           </v-card-title>
-      <v-row class="mb-4">
+      <v-row v-if="user !== null && role > 1" class="mb-4">
         <v-col cols="11">
       
-    </v-col>
-    <v-table theme="dark">
-    <thead>
-      <tr>
-        <th class="text-left">
-          First Name
-        </th>
-        <th class="text-left">
-          Last Name
-        </th>
-        <th class="text-left">
-          Email
-        </th>
-        <th class="text-left">
-          Phone
-        </th>
-        <th class="text-left">
-          Actions
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="clerk in clerks"
-        :key="clerk.id"
-      >
-        <td>{{ clerk.firstName }}</td>
-        <td>{{ clerk.lastName }}</td>
-        <td>{{ clerk.email }}</td>
-        <td>{{ clerk.phoneNumber }}</td>
-        <td><v-icon
-            v-if="user !== null"
-            size="small"
-            icon="mdi-delete"
-            @click="handleDelete(clerk.id)"
-          ></v-icon>&nbsp;
-          <v-icon
-            v-if="user !== null"
-            size="small"
-            icon="mdi-pencil"
-            @click="navigateToEdit(clerk.id)"
-          ></v-icon></td>
-      </tr>
-    </tbody>
-  </v-table>
-    </v-row>
+        </v-col>
+        <v-table theme="dark">
+          <thead>
+            <tr>
+              <th class="text-left">
+                First Name
+              </th>
+              <th class="text-left">
+                Last Name
+              </th>
+              <th class="text-left">
+                Email
+              </th>
+              <th class="text-left">
+                Phone
+              </th>
+              <th class="text-left">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="clerk in clerks"
+              :key="clerk.id"
+            >
+              <td>{{ clerk.firstName }}</td>
+              <td>{{ clerk.lastName }}</td>
+              <td>{{ clerk.email }}</td>
+              <td>{{ clerk.phoneNumber }}</td>
+              <td><v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-delete"
+                  @click="handleDelete(clerk.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-pencil"
+                  @click="navigateToEdit(clerk.id)"
+                ></v-icon></td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-row>
+
+      <v-card-title v-if="user !== null && role > 1" class="pl-0 text-h4 font-weight-bold"
+            >Drivers
+          </v-card-title>
+      <v-row v-if="user !== null && role > 1" class="mb-4">
+        <v-col cols="11">
+      
+        </v-col>
+        <v-table  theme="dark">
+          <thead>
+            <tr>
+              <th class="text-left">
+                First Name
+              </th>
+              <th class="text-left">
+                Last Name
+              </th>
+              <th class="text-left">
+                Email
+              </th>
+              <th class="text-left">
+                Phone
+              </th>
+              <th class="text-left">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="driver in drivers"
+              :key="driver.id"
+            >
+              <td>{{ driver.firstName }}</td>
+              <td>{{ driver.lastName }}</td>
+              <td>{{ driver.email }}</td>
+              <td>{{ driver.phoneNumber }}</td>
+              <td><v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-delete"
+                  @click="handleDelete(driver.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-pencil"
+                  @click="navigateToEditDriver(driver.id)"
+                ></v-icon></td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-row>
 
       <v-row align="center" class="mb-4">
         <v-col cols="10">
