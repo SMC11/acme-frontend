@@ -252,11 +252,6 @@ function openAddDriver() {
   <v-container>
     <div id="body">
       <v-row align="center" class="mb-4">
-        <v-col cols="6">
-          <!-- <v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Itineraries For Destinations
-          </v-card-title> -->
-        </v-col>
         <v-col class="d-flex justify-end" cols="2">
           <v-btn v-if="user !== null && role > 1" color="accent" @click="openAdd()"
             >Create Clerk</v-btn>
@@ -268,6 +263,8 @@ function openAddDriver() {
         <v-col class="d-flex justify-end" cols="2">
           <v-btn v-if="user !== null && role > 1" color="accent" @click="openAddCustomer()"
             >Create Customer</v-btn>
+        </v-col>
+        <v-col cols="6">
         </v-col>
       </v-row>
       <v-card-title v-if="user !== null && role > 1" class="pl-0 text-h4 font-weight-bold"
