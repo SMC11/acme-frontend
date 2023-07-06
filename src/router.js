@@ -39,6 +39,11 @@ const router = createRouter({
       component: () => import("./views/CreateCustomer.vue"),
     },
     {
+      path: "/editcustomer/:id",
+      name: "editcustomer",
+      component: () => import("./views/EditCustomer.vue"),
+    },
+    {
       path: "/createdriver",
       name: "createdriver",
       component: () => import("./views/CreateDriver.vue"),
