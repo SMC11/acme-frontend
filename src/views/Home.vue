@@ -214,6 +214,10 @@ async function handleDeleteCustomer(customerId) {
     });
 }
 
+function openAddOrder() {
+  router.push({ name: "createorder" });
+}
+
 function openAddDriver() {
   router.push({ name: "createdriver" });
 }
