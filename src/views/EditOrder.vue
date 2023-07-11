@@ -1,26 +1,17 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import UserServices from "../services/UserServices";
 import OrderServices from "../services/OrderServices";
 import CustomerServices from "../services/CustomerServices";
-
+import UserServices from "../services/UserServices";
 
 const route = useRoute();
 const router = useRouter();
 
-const newOrder = ref({
-  pickupTime: "",
-  deliveryTime: "",
-  blocks: "",
-  quotedPrice: "",
-  customerId: "",
-  deliverToCustomerId: "",
-  userId: "",
-  finalBill: "",
-});
-let isAddOrder = ref(true);
-let isEditClerk = ref(false);
+var newOrder = ref({});
+let isAddOrder = ref(false);
+let isEditOrder = ref(true);
+let readOnly = ref(true);
 const pickupDate = ref(null);
 const pickupTime = ref(null);
 const deliveryDate = ref(null);
@@ -35,24 +26,89 @@ const snackbar = ref({
   text: "",
 });
 
+const rules = ref(({
+      valid: false,
+      nameRules: [
+        value => {
+          if (value) return true
+
+          return 'Value is required.'
+        },
+        value => {
+          if (value?.length <= 32) return true
+
+          return 'Value must be less than 32 characters.'
+        },
+      ],
+      emailRules: [
+        value => {
+          if (value) return true
+
+          return 'E-mail is required.'
+        },
+        value => {
+          if (/.+@.+\..+/.test(value)) return true
+
+          return 'E-mail must be valid.'
+        },
+      ],
+      phoneRules: [
+        value => {
+          if (value) return true
+
+          return 'Phone Number is required.'
+        },
+        value => {
+          if (/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im.test(value)) return true
+
+          return 'Phone Number must be valid.'
+        },
+      ],
+      passwordRules: [
+        value => {
+          if (value) return true
+
+          return 'Password is required.'
+        },
+        value => {
+          //At least 1 number, 1 Capital Letter, 1 Small letter, 1 Special Char
+          if (/^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/.test(value)) return true
+
+          return 'Password must be valid. (At least 1 number & 1 Capital Letter & 1 Small letter & 1 Special Character)'
+        },
+      ],
+      confirmPasswordRules: [
+        value => {
+          if (value) return true
+
+          return 'Value is required.'
+        },
+        value => {
+          if (value === user.value.password) return true
+
+          return 'Must match with Password.'
+        },
+      ],
+      
+    }));
 
 onMounted(async () => {
-  const user = localStorage.getItem("user");
-  if(user === null){
+  const cacheUser = localStorage.getItem("user");
+  if(cacheUser === null){
     router.push({ name: "login" });
   }
-  if(JSON.parse(user).role < 1){
-    router.push({ name: "home" });
+  // console.log(JSON.parse(cacheUser).id);
+    
+  await getCustomers();
+  await getOrder();
+  if (cacheUser !== null) {
+    // user.value.id = JSON.parse(cacheUser).id;
+    if(JSON.parse(cacheUser).role >= 1){
+        readOnly.value = false;
+        // console.log(readOnly);
+    }
   }
-
-  // console.log(newOrder);
-  if (user !== null) {
-    newOrder.value.userId = JSON.parse(user).id;
-  }
-  getCustomers();
-  // console.log(newOrder.value);
 });
-
 async function getCustomers() {
   await CustomerServices.getCustomers()
     .then((response) => {
@@ -65,33 +121,37 @@ async function getCustomers() {
       snackbar.value.text = error.response.data.message;
     });
 }
-async function getClerk() {
-  await UserServices.getUser(route.params.id)
+async function getOrder() {
+  await OrderServices.getOrder(route.params.id)
     .then((response) => {
-      newUser.value = response.data[0];
+      newOrder.value = response.data;
+      console.log(newOrder.value);
+      pickupDate.value = getDate(newOrder.value.pickupTime);
+      pickupTime.value = getTime(newOrder.value.pickupTime);
+      deliveryDate.value = getDate(newOrder.value.deliveryTime);
+      deliveryTime.value = getTime(newOrder.value.deliveryTime);
+      selectedCustomer.value = newOrder.value.customer;
+      selectedDeliverToCustomer.value = newOrder.value.deliverToCustomer;
     })
     .catch((error) => {
       console.log(error);
     });
 }
-
-async function updateClerk() {
-  await UserServices.updateUser(newUser.value.id, newUser.value)
-    .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `${newUser.value.firstName} updated successfully!`;
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    });
-  await getClerk();
+function getDate(date){
+    date = new Date(date);
+    return date.toISOString().split('T')[0];
 }
 
-async function addOrder() {
+function getTime(date){
+    console.log(date);
+    date = new Date(date);
+    console.log(date);
+    let time = date.toTimeString().split(' GMT')[0];
+    console.log(time);
+    return time.split('Z')[0];
+}
+
+async function updateOrder() {
   let pickUp = pickupDate.value +"T"+ pickupTime.value;
   let delivery = deliveryDate.value +"T"+ deliveryTime.value;
   if(new Date(pickUp) > new Date(delivery)){
@@ -102,40 +162,46 @@ async function addOrder() {
   newOrder.value.deliveryTime = delivery;
   newOrder.value.customerId = selectedCustomer.value.id;
   newOrder.value.deliverToCustomerId = selectedDeliverToCustomer.value.id;
-  await OrderServices.addOrder(newOrder.value).then(
-    () => {
+  await OrderServices.updateOrder(newOrder.value.id, newOrder.value)
+    .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
-      snackbar.value.text = `Order created successfully!`;
-      setTimeout(()=> {router.push({ name: "home" });}, 5000);
-    }
-  )
-  .catch((error) => {
-    console.log(error);
-    snackbar.value.value = true;
-    snackbar.value.color = "error";
-    snackbar.value.text = error.response.data.message;
-  });
+      snackbar.value.text = `Order updated successfully!`;
+      setTimeout(()=> {router.push({ name: "home" });}, 2500);
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+  await getOrder();
 }
 
+function closeSnackBar() {
+  snackbar.value.value = false;
+}
 
 </script>
 
 <template>
   <v-container>
+    <v-btn v-if="user !== null" class="mx-2" @click="router.go(-1)"> Back </v-btn>
+    <br><br>
     <v-row align="center">
       <v-col cols="10"
         ><v-card-title class="pl-0 text-h4 font-weight-bold"
-          >Create Order
+          >{{ readOnly?"View ":"Edit " }} Order
         </v-card-title>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
         <v-card class="rounded-lg elevation-5">
-          <v-form>
+          <v-form v-model="rules.valid"
+            :readonly="readOnly"
+          >
           <v-card-text>
-            
             <v-text-field
               v-model="pickupDate"
               label="Pick Up Date"
@@ -174,9 +240,9 @@ async function addOrder() {
             auto-select-first
             hide-selected
             clearable
-          ></v-autocomplete>
+            ></v-autocomplete>
 
-          <v-autocomplete
+            <v-autocomplete
             v-model="selectedDeliverToCustomer"
             :items="customers"
             item-title="name"
@@ -188,7 +254,7 @@ async function addOrder() {
             auto-select-first
             hide-selected
             clearable
-          ></v-autocomplete>
+            ></v-autocomplete>
 
             <v-text-field
               v-model="newOrder.blocks"
@@ -207,25 +273,24 @@ async function addOrder() {
               label="Final Bill"
               required
             ></v-text-field>
-
           </v-card-text>
           <v-card-actions class="pt-0">
             
-            <v-btn 
+            <v-btn v-if="!readOnly"
             variant="flat" color="primary"
             @click="
               isAddOrder
                 ? addOrder()
-                : isEditClerk
-                ? updateClerk()
+                : isEditOrder
+                ? updateOrder()
                 : false
             "
              >
              {{
               isAddOrder
                 ? "Create Order"
-                : isEditClerk
-                ? "Update Clerk"
+                : isEditOrder
+                ? "Update Order"
                 : ""
             }}
             </v-btn>

@@ -53,8 +53,6 @@ async function mounted(){
   await getOrders();
   user.value = JSON.parse(localStorage.getItem("user"));
   role.value = user.value.role;
-  console.log(user.value);
-  console.log(role.value);
   
 }
 
@@ -216,6 +214,10 @@ function navigateToEdit(clerkId) {
   router.push({ name: "editclerk", params: { id: clerkId } });
 }
 
+function navigateToEditOrder(orderId) {
+  router.push({ name: "editorder", params: { id: orderId } });
+}
+
 function openAddCustomer() {
   router.push({ name: "createcustomer" });
 }
@@ -283,10 +285,10 @@ function getDateTime(date){
         <v-col cols="6">
         </v-col>
       </v-row>
-      <v-card-title v-if="user !== null && role == 1" class="pl-0 text-h4 font-weight-bold"
+      <v-card-title v-if="user !== null && role >= 1" class="pl-0 text-h4 font-weight-bold"
             >Orders
           </v-card-title>
-      <v-row v-if="user !== null && role == 1" class="mb-4">
+      <v-row v-if="user !== null && role >= 1" class="mb-4">
         <v-col cols="11">
       
         </v-col>
@@ -345,7 +347,7 @@ function getDateTime(date){
                   v-if="user !== null"
                   size="small"
                   icon="mdi-pencil"
-                  @click="navigateToEdit(order.id)"
+                  @click="navigateToEditOrder(order.id)"
                 ></v-icon></td>
             </tr>
           </tbody>
