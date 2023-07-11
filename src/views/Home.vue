@@ -68,35 +68,10 @@ async function getClerks() {
         snackbar.value.text = error.response.data.message;
       });
   } else {
-    await ItineraryServices.getItineraries()
-      .then((response) => {
-        itineraries.value = response.data;
-        for(let i = 0; i < response.data.length; i++){
-          let index = i%3;
-          itinerariesList[index].value.push(response.data[i]);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        snackbar.value.value = true;
-        snackbar.value.color = "error";
-        snackbar.value.text = error.response.data.message;
-      });
+    
   }
   if (user.value !== null && user.value.role == 0) {
-    await ItineraryServices.getItinerariesByUserId(user.value.id)
-      .then((response) => {
-        for(let i = 0; i < response.data.length; i++){
-          let index = i%3;
-          subscribedItinerariesList[index].value.push(response.data[i]);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        snackbar.value.value = true;
-        snackbar.value.color = "error";
-        snackbar.value.text = error.response.data.message;
-      });
+    
   } 
 }
 
@@ -250,6 +225,11 @@ function openAddDriver() {
 <template>
   <v-container>
     <div id="body">
+      <v-row v-if="user !== null && role == 1" class="mb-2">
+        <v-card-title v-if="user !== null && role == 1" class="pl-0 text-h4 font-weight-bold"
+            >Welcome Clerk!
+          </v-card-title>
+      </v-row>
       <v-row align="center" class="mb-4">
         <v-col class="d-flex justify-end" cols="2">
           <v-btn v-if="user !== null && role > 1" color="accent" @click="openAdd()"
@@ -262,6 +242,8 @@ function openAddDriver() {
         <v-col class="d-flex justify-end" cols="2">
           <v-btn v-if="user !== null && role > 1" color="accent" @click="openAddCustomer()"
             >Create Customer</v-btn>
+            <v-btn v-if="user !== null && role == 1" color="accent" @click="openAddOrder()"
+            >Create Order</v-btn>
         </v-col>
         <v-col cols="6">
         </v-col>
