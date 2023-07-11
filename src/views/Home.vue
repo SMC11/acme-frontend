@@ -6,11 +6,13 @@ import ItineraryCard from "../components/ItineraryCardComponent.vue";
 import UserServices from "../services/UserServices";
 import EmailServices from "../services/EmailServices";
 import CustomerServices from "../services/CustomerServices";
+import OrderServices from "../services/OrderServices";
 
 const router = useRouter();
 const route = useRoute();
 const clerks = ref([]);
 const drivers = ref([]);
+const orders = ref([]);
 const customers = ref([]);
 const itinerariesList = [ref([]), ref([]), ref([])];
 const subscribedItinerariesList = [ref([]), ref([]), ref([])];
@@ -22,6 +24,8 @@ const snackbar = ref({
   color: "",
   text: "",
 });
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
@@ -46,6 +50,7 @@ async function mounted(){
   await getClerks();
   await getDrivers();
   await getCustomers();
+  await getOrders();
   user.value = JSON.parse(localStorage.getItem("user"));
   role.value = user.value.role;
   console.log(user.value);
@@ -75,6 +80,26 @@ async function getClerks() {
   } 
 }
 
+async function getOrders() {
+  user.value = JSON.parse(localStorage.getItem("user"));
+  console.log(user.value);
+  if (user.value !== null && user.value.role == 1) {
+    await OrderServices.getOrders()
+      .then((response) => {
+        orders.value = response.data;
+        for(let i=0; i<orders.value.length; i++){
+          orders.value[i].pickupTime = getDateTime(orders.value[i].pickupTime);
+          orders.value[i].deliveryTime = getDateTime(orders.value[i].deliveryTime);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        snackbar.value.value = true;
+        snackbar.value.color = "error";
+        snackbar.value.text = error.response.data.message;
+      });
+  }
+}
 
 async function getDrivers() {
   user.value = JSON.parse(localStorage.getItem("user"));
@@ -224,6 +249,12 @@ function openAddDriver() {
 // function navigateToEditDriver(clerkId) {
 //   router.push({ name: "editdriver", params: { id: clerkId } });
 // }
+function getDateTime(date){
+  date = new Date(date);
+  return days[date.getDay()] + " " + months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear()
+  + " " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+  ;
+}
 </script>
 
 <template>
@@ -251,6 +282,74 @@ function openAddDriver() {
         </v-col>
         <v-col cols="6">
         </v-col>
+      </v-row>
+      <v-card-title v-if="user !== null && role == 1" class="pl-0 text-h4 font-weight-bold"
+            >Orders
+          </v-card-title>
+      <v-row v-if="user !== null && role == 1" class="mb-4">
+        <v-col cols="11">
+      
+        </v-col>
+        <v-table theme="dark">
+          <thead>
+            <tr>
+              <th class="text-left">
+                Pick Up
+              </th>
+              <th class="text-left">
+                Drop Off
+              </th>
+              <th class="text-left">
+                From
+              </th>
+              <th class="text-left">
+                To
+              </th>
+              <th class="text-left">
+                Blocks
+              </th>
+              <th class="text-left">
+                Quoted Price
+              </th>
+              <th class="text-left">
+                Final Price
+              </th>
+              <th class="text-left">
+                Driver
+              </th>
+              <th class="text-left">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="order in orders"
+              :key="order.id"
+            >
+              <td>{{ order.pickupTime }}</td>
+              <td>{{ order.deliveryTime }}</td>
+              <td>{{ order.customerId }}</td>
+              <td>{{ order.deliverToCustomerId }}</td>
+              <td>{{ order.blocks }}</td>
+              <td>{{ order.quotedPrice }}</td>
+              <td>{{ order.finalBill }}</td>
+              <td>{{  }}</td>
+              <td><v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-delete"
+                  @click="handleDelete(order.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null"
+                  size="small"
+                  icon="mdi-pencil"
+                  @click="navigateToEdit(order.id)"
+                ></v-icon></td>
+            </tr>
+          </tbody>
+        </v-table>
       </v-row>
       <v-card-title v-if="user !== null && role > 1" class="pl-0 text-h4 font-weight-bold"
             >Clerks
