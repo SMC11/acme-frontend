@@ -58,7 +58,6 @@ async function mounted(){
 
 async function getClerks() {
   user.value = JSON.parse(localStorage.getItem("user"));
-  console.log(user.value);
   if (user.value !== null && user.value.role > 1) {
     await UserServices.getClerks()
       .then((response) => {
@@ -80,7 +79,6 @@ async function getClerks() {
 
 async function getOrders() {
   user.value = JSON.parse(localStorage.getItem("user"));
-  console.log(user.value);
   if (user.value !== null && user.value.role == 1) {
     await OrderServices.getOrders()
       .then((response) => {
@@ -101,7 +99,6 @@ async function getOrders() {
 
 async function getDrivers() {
   user.value = JSON.parse(localStorage.getItem("user"));
-  console.log(user.value);
   if (user.value !== null && user.value.role > 1) {
     await UserServices.getDrivers()
       .then((response) => {
@@ -117,8 +114,7 @@ async function getDrivers() {
 }
 async function getCustomers() {
   user.value = JSON.parse(localStorage.getItem("user"));
-  console.log(user.value);
-  if (user.value !== null && user.value.role > 1) {
+  if (user.value !== null && user.value.role >= 1) {
     await CustomerServices.getCustomers()
       .then((response) => {
         customers.value = response.data;
@@ -132,6 +128,22 @@ async function getCustomers() {
   }
 }
 
+async function handleDeleteOrder(orderId) {
+  // await sendEmail(orderId);
+  await OrderServices.deleteOrder(orderId)
+  .then((response) => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = response.data.message;
+      mounted();
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+}
 
 async function handleDelete(clerkId) {
   // await sendEmail(clerkId);
@@ -205,6 +217,16 @@ function viewHotels() {
 }
 function viewSites() {
   router.push({ name: "viewsites" });
+}
+
+function getCustomerInfo(customerId){
+  console.log(customers);
+  for(let i=0; i< customers.value.length; i++){
+    console.log(customers.value);
+    if(customers.value[i].id == customerId){
+      return customers.value[i].name;
+    }
+  }
 }
 
 function closeSnackBar() {
@@ -331,8 +353,8 @@ function getDateTime(date){
             >
               <td>{{ order.pickupTime }}</td>
               <td>{{ order.deliveryTime }}</td>
-              <td>{{ order.customerId }}</td>
-              <td>{{ order.deliverToCustomerId }}</td>
+              <td>{{ getCustomerInfo(order.customerId) }}</td>
+              <td>{{ getCustomerInfo(order.deliverToCustomerId) }}</td>
               <td>{{ order.blocks }}</td>
               <td>{{ order.quotedPrice }}</td>
               <td>{{ order.finalBill }}</td>
@@ -341,7 +363,7 @@ function getDateTime(date){
                   v-if="user !== null"
                   size="small"
                   icon="mdi-delete"
-                  @click="handleDelete(order.id)"
+                  @click="handleDeleteOrder(order.id)"
                 ></v-icon>&nbsp;
                 <v-icon
                   v-if="user !== null"
