@@ -224,7 +224,6 @@ function navigateToEditCustomer(customerId) {
 }
 
 async function handleDeleteCustomer(customerId) {
-  // await sendEmail(customerId);
   await CustomerServices.deleteCustomer(customerId)
   .then((response) => {
       snackbar.value.value = true;
