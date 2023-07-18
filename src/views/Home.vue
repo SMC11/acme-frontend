@@ -79,7 +79,7 @@ async function getClerks() {
 
 async function getOrders() {
   user.value = JSON.parse(localStorage.getItem("user"));
-  if (user.value !== null && user.value.role == 1) {
+  if (user.value !== null && user.value.role >= 0) {
     await OrderServices.getOrders()
       .then((response) => {
         orders.value = response.data;
@@ -114,7 +114,7 @@ async function getDrivers() {
 }
 async function getCustomers() {
   user.value = JSON.parse(localStorage.getItem("user"));
-  if (user.value !== null && user.value.role >= 1) {
+  if (user.value !== null && user.value.role >= 0) {
     await CustomerServices.getCustomers()
       .then((response) => {
         customers.value = response.data;
@@ -317,10 +317,10 @@ function getDateTime(date){
         <v-col cols="6">
         </v-col>
       </v-row>
-      <v-card-title v-if="user !== null && role >= 1" class="pl-0 text-h4 font-weight-bold"
+      <v-card-title v-if="user !== null && role >= 0" class="pl-0 text-h4 font-weight-bold"
             >Orders
           </v-card-title>
-      <v-row v-if="user !== null && role >= 1" class="mb-4">
+      <v-row v-if="user !== null && role >= 0" class="mb-4">
         <v-col cols="11">
       
         </v-col>
@@ -348,7 +348,7 @@ function getDateTime(date){
               <th class="text-left">
                 Final Price
               </th>
-              <th class="text-left">
+              <th v-if="role > 0" class="text-left">
                 Driver
               </th>
               <th class="text-left">
@@ -368,19 +368,45 @@ function getDateTime(date){
               <td>{{ order.blocks }}</td>
               <td>{{ order.quotedPrice }}</td>
               <td>{{ order.finalBill }}</td>
-              <td>{{  }}</td>
+              <td v-if="role > 0">{{  }}</td>
               <td><v-icon
-                  v-if="user !== null"
+                  v-if="user !== null && role > 0"
                   size="small"
                   icon="mdi-delete"
                   @click="handleDeleteOrder(order.id)"
                 ></v-icon>&nbsp;
                 <v-icon
-                  v-if="user !== null"
+                  v-if="user !== null && role > 0"
                   size="small"
                   icon="mdi-pencil"
                   @click="navigateToEditOrder(order.id)"
-                ></v-icon></td>
+                ></v-icon>&nbsp;
+                
+                <v-icon
+                  v-if="user !== null && role == 0"
+                  size="small"
+                  icon="mdi-account-plus"
+                  @click="navigateToEditOrder(order.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null && role == 0"
+                  size="small"
+                  icon="mdi-account-arrow-left"
+                  @click="navigateToEditOrder(order.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null && role == 0"
+                  size="small"
+                  icon="mdi-account-arrow-right"
+                  @click="navigateToEditOrder(order.id)"
+                ></v-icon>&nbsp;
+                <v-icon
+                  v-if="user !== null && role == 0"
+                  size="small"
+                  icon="mdi-account-check"
+                  @click="navigateToEditOrder(order.id)"
+                ></v-icon>&nbsp;
+              </td>
             </tr>
           </tbody>
         </v-table>
