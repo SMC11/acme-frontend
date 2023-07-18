@@ -285,8 +285,18 @@ function getDateTime(date){
   <v-container>
     <div id="body">
       <v-row v-if="user !== null && role == 1" class="mb-2">
-        <v-card-title v-if="user !== null && role == 1" class="pl-0 text-h4 font-weight-bold"
+        <v-card-title class="pl-0 text-h4 font-weight-bold"
             >Welcome Clerk!
+          </v-card-title>
+      </v-row>
+      <v-row v-if="user !== null && role == 0" class="mb-2">
+        <v-card-title class="pl-0 text-h4 font-weight-bold"
+            >Welcome Driver!
+          </v-card-title>
+      </v-row>
+      <v-row v-if="user !== null && role == 2" class="mb-2">
+        <v-card-title class="pl-0 text-h4 font-weight-bold"
+            >Welcome Admin!
           </v-card-title>
       </v-row>
       <v-row align="center" class="mb-4">
