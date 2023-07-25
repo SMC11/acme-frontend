@@ -270,9 +270,9 @@ function openAddOrder() {
 function openAddDriver() {
   router.push({ name: "createdriver" });
 }
-// function navigateToEditDriver(clerkId) {
-//   router.push({ name: "editdriver", params: { id: clerkId } });
-// }
+function navigateToEditDriver(clerkId) {
+  router.push({ name: "editdriver", params: { id: clerkId } });
+}
 function getDateTime(date){
   date = new Date(date);
   return days[date.getDay()] + " " + months[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear()
