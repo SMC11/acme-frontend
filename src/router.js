@@ -99,6 +99,11 @@ const router = createRouter({
       component: () => import("./views/EditClerk.vue"),
     },
     {
+      path: "/editdriver/:id",
+      name: "editdriver",
+      component: () => import("./views/EditDriver.vue"),
+    },
+    {
       path: "/editorder/:id",
       name: "editorder",
       component: () => import("./views/EditOrder.vue"),

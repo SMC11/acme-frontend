@@ -140,7 +140,7 @@ function closeSnackBar() {
     <v-row align="center">
       <v-col cols="10"
         ><v-card-title class="pl-0 text-h4 font-weight-bold"
-          >{{ readOnly?"View ":"Edit " }} Clerk
+          >{{ readOnly?"View ":"Edit " }} Driver
         </v-card-title>
       </v-col>
     </v-row>
@@ -213,9 +213,9 @@ function closeSnackBar() {
              >
              {{
               isAddUser
-                ? "Create Clerk"
+                ? "Create Driver"
                 : isEditUser
-                ? "Update Clerk"
+                ? "Update Driver"
                 : ""
             }}
             </v-btn>
