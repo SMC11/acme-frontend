@@ -468,9 +468,7 @@ function getDateTime(date){
             >Drivers
           </v-card-title>
       <v-row v-if="user !== null && role > 1" class="mb-4">
-        <v-col cols="11">
-      
-        </v-col>
+        <v-col cols="11"></v-col>
         <v-table  theme="dark">
           <thead>
             <tr>
@@ -501,13 +499,13 @@ function getDateTime(date){
               <td>{{ driver.email }}</td>
               <td>{{ driver.phoneNumber }}</td>
               <td><v-icon
-                  v-if="user !== null"
+                  v-if="user !== null && role > 1"
                   size="small"
                   icon="mdi-delete"
                   @click="handleDelete(driver.id)"
                 ></v-icon>&nbsp;
                 <v-icon
-                  v-if="user !== null"
+                  v-if="user !== null && role > 1"
                   size="small"
                   icon="mdi-pencil"
                   @click="navigateToEditDriver(driver.id)"
