@@ -317,10 +317,10 @@ function getDateTime(date){
         <v-col cols="6">
         </v-col>
       </v-row>
-      <v-card-title v-if="user !== null && role >= 0" class="pl-0 text-h4 font-weight-bold"
+      <v-card-title v-if="user !== null" class="pl-0 text-h4 font-weight-bold"
             >Orders
           </v-card-title>
-      <v-row v-if="user !== null && role >= 0" class="mb-4">
+      <v-row v-if="user !== null" class="mb-4">
         <v-col cols="11">
       
         </v-col>
