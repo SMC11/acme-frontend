@@ -56,6 +56,25 @@ async function mounted(){
   
 }
 
+const streets = [1, 2, 3, 4, 5, 6, 7];
+const crossStreets = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+const time = 3;
+const aList = new Map();
+
+function insertNode(node){
+  aList.set(node, []);
+}
+
+function createEdge(firstNode, lastNode, time){
+  aList.get(firstNode).push({lastNode, time});
+}
+
+function callGraphMake(){
+  map.forEach(insertNode);
+  // routes.forEach
+}
+
+
 async function getClerks() {
   user.value = JSON.parse(localStorage.getItem("user"));
   if (user.value !== null && user.value.role > 1) {
