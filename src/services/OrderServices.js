@@ -13,7 +13,10 @@ export default {
   updateOrder(orderId, order) {
     return apiClient.put("orders/" + orderId, order);
   },
-   deleteOrder(orderId) {
-    return apiClient.delete("orders/" + orderId);
+  deleteOrder(orderId) {
+   return apiClient.delete("orders/" + orderId);
+  },
+  updateOrderState(orderId, state) {
+    return apiClient.put("orders/" + orderId, state);
   },
 };
