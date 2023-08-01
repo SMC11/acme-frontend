@@ -15,9 +15,6 @@ const newUser = ref({
 });
 let isAddClerk = ref(true);
 let isEditClerk = ref(false);
-const itineraryDay = ref([]);
-const site = ref([]);
-const hotel = ref([]);
 
 const snackbar = ref({
   value: false,

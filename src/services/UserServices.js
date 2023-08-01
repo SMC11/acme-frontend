@@ -13,15 +13,6 @@ export default {
   getDrivers() {
     return apiClient.get("drivers");
   },
-  getUserSubscriptions(id) {
-    return apiClient.get("users/" + id + "/subscriptions/");
-  },
-  subscribe(id, itineraryId) {
-    return apiClient.post("users/" + id + "/subscriptions/" + itineraryId);
-  },
-  unsubscribe(id, itineraryId) {
-    return apiClient.delete("users/" + id + "/subscriptions/" + itineraryId);
-  },
   addUser(user) {
     return apiClient.post("users", user);
   },
