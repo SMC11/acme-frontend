@@ -454,6 +454,31 @@ function handleDownloadPDF(){
       <v-row v-if="user !== null" class="mb-4">
         <v-col cols="10">
           <v-autocomplete
+            v-model="selectedCustomer"
+            :items="customers"
+            item-title="name"
+            item-value="id"
+            label="Select Customer"
+            placeholder="Search Customers"
+            persistent-hint
+            return-object
+            auto-select-first
+            :on-change="getOrders()"
+            hide-selected
+            clearable
+          ></v-autocomplete>
+        </v-col>
+        <v-col cols="2">          
+          <v-icon
+                  v-if="user !== null && role == 2"
+                  size="x-large"
+                  icon="mdi-file-pdf-box"
+                  title="Download PDF"
+                  @click="handleDownloadPDF()"
+                ></v-icon>
+        </v-col>
+        <v-col cols="10">
+          <v-autocomplete
             v-model="selectedDriver"
             :items="drivers"
             item-title="firstName"
