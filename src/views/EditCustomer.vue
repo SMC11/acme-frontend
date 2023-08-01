@@ -118,6 +118,13 @@ function closeSnackBar() {
           <v-card-text>
             <v-row>
               <v-col>
+                
+                <v-text-field
+                  v-model="customer.phoneNumber"
+                  label="Number"
+                  required
+                ></v-text-field>
+
                 <v-text-field
               v-model="customer.name"
               label="Name"
@@ -134,13 +141,6 @@ function closeSnackBar() {
                 <v-text-field
                   v-model="customer.instructions"
                   label="Instructions"
-                  required
-                ></v-text-field>
-
-                <v-text-field
-                  v-model="customer.phoneNumber"
-                  label="Phone Number"
-                  :rules="rules.phoneRules"
                   required
                 ></v-text-field>
               </v-col>

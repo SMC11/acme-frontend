@@ -101,6 +101,11 @@ async function addCustomer() {
           <v-form>
           <v-card-text>
             <v-text-field
+              v-model="newCustomer.phoneNumber"
+              label="Number"
+              required
+            ></v-text-field>
+            <v-text-field
               v-model="newCustomer.name"
               label="Name"
               required
@@ -114,11 +119,6 @@ async function addCustomer() {
             <v-text-field
               v-model="newCustomer.instructions"
               label="Instructions"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="newCustomer.phoneNumber"
-              label="Phone"
               required
             ></v-text-field>
           </v-card-text>

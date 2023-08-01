@@ -527,6 +527,9 @@ function getDateTime(date){
           <thead>
             <tr>
               <th class="text-left">
+                Number
+              </th>
+              <th class="text-left">
                 Name
               </th>
               <th class="text-left">
@@ -534,9 +537,6 @@ function getDateTime(date){
               </th>
               <th class="text-left">
                 Instructions
-              </th>
-              <th class="text-left">
-                Phone
               </th>
               <th class="text-left">
                 Actions
@@ -548,10 +548,10 @@ function getDateTime(date){
               v-for="customer in customers"
               :key="customer.id"
             >
+              <td>{{ customer.phoneNumber }}</td>
               <td>{{ customer.name }}</td>
               <td>{{ customer.address }}</td>
               <td>{{ customer.instructions }}</td>
-              <td>{{ customer.phoneNumber }}</td>
               <td><v-icon
                   v-if="user !== null"
                   size="small"

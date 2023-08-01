@@ -92,8 +92,8 @@ async function updateClerk() {
 }
 
 async function addOrder() {
-  let pickUp = pickupDate.value +"T"+ pickupTime.value;
-  let delivery = deliveryDate.value +"T"+ deliveryTime.value;
+  let pickUp = pickupDate.value +" "+ pickupTime.value;
+  let delivery = deliveryDate.value +" "+ deliveryTime.value;
   if(new Date(pickUp) > new Date(delivery)){
     alert("Pick Up DateTime cannot be after Delivery DateTime");
     return;
@@ -167,7 +167,7 @@ async function addOrder() {
             :items="customers"
             item-title="name"
             item-value="id"
-            label="Select Customer"
+            label="Select Pick Up Customer"
             placeholder="Search Customers"
             persistent-hint
             return-object
@@ -181,7 +181,7 @@ async function addOrder() {
             :items="customers"
             item-title="name"
             item-value="id"
-            label="Select Customer"
+            label="Select Drop Off Customer"
             placeholder="Search Customers"
             persistent-hint
             return-object
@@ -190,7 +190,7 @@ async function addOrder() {
             clearable
           ></v-autocomplete>
 
-            <v-text-field
+            <!-- <v-text-field
               v-model="newOrder.blocks"
               label="Blocks"
               required
@@ -206,7 +206,7 @@ async function addOrder() {
               v-model="newOrder.finalBill"
               label="Final Bill"
               required
-            ></v-text-field>
+            ></v-text-field> -->
 
           </v-card-text>
           <v-card-actions class="pt-0">
