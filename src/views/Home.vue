@@ -7,6 +7,7 @@ import UserServices from "../services/UserServices";
 import EmailServices from "../services/EmailServices";
 import CustomerServices from "../services/CustomerServices";
 import OrderServices from "../services/OrderServices";
+import noDeprecatedVOnNumberModifiers from "eslint-plugin-vue/lib/rules/no-deprecated-v-on-number-modifiers";
 
 const router = useRouter();
 const route = useRoute();
@@ -41,6 +42,9 @@ onMounted(async () => {
 });
 
 async function mounted(){
+  user.value = JSON.parse(localStorage.getItem("user"));
+  role.value = user.value.role;
+
   itinerariesList[0].value = [];
   itinerariesList[1].value = [];
   itinerariesList[2].value = [];
@@ -51,13 +55,10 @@ async function mounted(){
   await getDrivers();
   await getCustomers();
   await getOrders();
-  user.value = JSON.parse(localStorage.getItem("user"));
-  role.value = user.value.role;
   
 }
 
 async function getClerks() {
-  user.value = JSON.parse(localStorage.getItem("user"));
   if (user.value !== null && user.value.role > 1) {
     await UserServices.getClerks()
       .then((response) => {
@@ -78,7 +79,6 @@ async function getClerks() {
 }
 
 async function getOrders() {
-  user.value = JSON.parse(localStorage.getItem("user"));
   if (user.value !== null && user.value.role >= 0) {
     await OrderServices.getOrders()
       .then((response) => {
@@ -86,6 +86,7 @@ async function getOrders() {
         for(let i=0; i<orders.value.length; i++){
           orders.value[i].pickupTime = getDateTime(orders.value[i].pickupTime);
           orders.value[i].deliveryTime = getDateTime(orders.value[i].deliveryTime);
+          orders.value[i].updatedAt = getDateTime(orders.value[i].updatedAt);
         }
       })
       .catch((error) => {
@@ -98,7 +99,6 @@ async function getOrders() {
 }
 
 async function getDrivers() {
-  user.value = JSON.parse(localStorage.getItem("user"));
   if (user.value !== null && user.value.role > 1) {
     await UserServices.getDrivers()
       .then((response) => {
@@ -113,7 +113,6 @@ async function getDrivers() {
   }
 }
 async function getCustomers() {
-  user.value = JSON.parse(localStorage.getItem("user"));
   if (user.value !== null && user.value.role >= 0) {
     await CustomerServices.getCustomers()
       .then((response) => {
@@ -126,6 +125,49 @@ async function getCustomers() {
         snackbar.value.text = error.response.data.message;
       });
   }
+}
+async function updateOrderState(orderId, state){
+  await OrderServices.updateOrderState(orderId, state)
+  .then((response) => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = response.data.message;
+      mounted();
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+}
+function assignOrder(orderId){
+  updateOrderState(orderId, {
+      userId: user.value.id,
+      state: 1,
+    });
+}
+function collectOrder(orderId){
+  updateOrderState(orderId, {
+      userId: user.value.id,
+      state: 2,
+    });
+}
+async function deliverOrder(orderId){
+  await OrderServices.getOrder(orderId)
+  .then((response) => {
+    let order = response.data;
+    var state = {
+      userId: user.value.id,
+      state: 3,
+      finalBill : order.quotedPrice,
+    }
+    if((new Date(order.deliveryTime)) >= (new Date())){
+      state['finalBill'] = parseFloat(order.quotedPrice) + parseFloat(order.quotedPrice * 0.10);
+    }
+    updateOrderState(orderId, state);
+  });
+  
 }
 
 async function handleDeleteOrder(orderId) {
@@ -220,9 +262,7 @@ function viewSites() {
 }
 
 function getCustomerInfo(customerId){
-  console.log(customers);
   for(let i=0; i< customers.value.length; i++){
-    console.log(customers.value);
     if(customers.value[i].id == customerId){
       return customers.value[i].name;
     }
@@ -348,6 +388,9 @@ function getDateTime(date){
               <th class="text-left">
                 Final Price
               </th>
+              <th class="text-left">
+                Last State Change At
+              </th>
               <th v-if="role > 0" class="text-left">
                 Driver
               </th>
@@ -368,44 +411,51 @@ function getDateTime(date){
               <td>{{ order.blocks }}</td>
               <td>{{ order.quotedPrice }}</td>
               <td>{{ order.finalBill }}</td>
+              <td>{{ order.updatedAt }}</td>
               <td v-if="role > 0">{{  }}</td>
               <td><v-icon
-                  v-if="user !== null && role > 0"
-                  size="small"
+                  v-if="user !== null && role > 0 && order.state < 1"
+                  size="large"
                   icon="mdi-delete"
+                  title="Delete"
                   @click="handleDeleteOrder(order.id)"
                 ></v-icon>&nbsp;
                 <v-icon
-                  v-if="user !== null && role > 0"
-                  size="small"
+                  v-if="user !== null && role > 0 && order.state < 1"
+                  size="large"
                   icon="mdi-pencil"
+                  title="Edit"
                   @click="navigateToEditOrder(order.id)"
                 ></v-icon>&nbsp;
                 
                 <v-icon
-                  v-if="user !== null && role == 0"
-                  size="small"
+                  v-if="user !== null && role == 0 && order.state == 0"
+                  size="large"
                   icon="mdi-account-plus"
-                  @click="navigateToEditOrder(order.id)"
-                ></v-icon>&nbsp;
+                  title="Assign"
+                  @click="assignOrder(order.id)"
+                ></v-icon>
                 <v-icon
-                  v-if="user !== null && role == 0"
-                  size="small"
+                  v-if="user !== null && role == 0 && order.state == 1"
+                  size="large"
                   icon="mdi-account-arrow-left"
-                  @click="navigateToEditOrder(order.id)"
-                ></v-icon>&nbsp;
+                  title="Collected"
+                  @click="collectOrder(order.id)"
+                ></v-icon>
                 <v-icon
-                  v-if="user !== null && role == 0"
-                  size="small"
+                  v-if="user !== null && role == 0 && order.state == 2"
+                  size="large"
                   icon="mdi-account-arrow-right"
-                  @click="navigateToEditOrder(order.id)"
-                ></v-icon>&nbsp;
+                  title="Delivered"
+                  @click="deliverOrder(order.id)"
+                ></v-icon>
                 <v-icon
-                  v-if="user !== null && role == 0"
-                  size="small"
+                  v-if="user !== null && role == 0 && order.state == 3"
+                  size="large"
                   icon="mdi-account-check"
-                  @click="navigateToEditOrder(order.id)"
-                ></v-icon>&nbsp;
+                  title="Done"
+                  disabled
+                ></v-icon>
               </td>
             </tr>
           </tbody>
