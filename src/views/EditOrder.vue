@@ -125,7 +125,6 @@ async function getOrder() {
   await OrderServices.getOrder(route.params.id)
     .then((response) => {
       newOrder.value = response.data;
-      console.log(newOrder.value);
       pickupDate.value = getDate(newOrder.value.pickupTime);
       pickupTime.value = getTime(newOrder.value.pickupTime);
       deliveryDate.value = getDate(newOrder.value.deliveryTime);
@@ -143,11 +142,8 @@ function getDate(date){
 }
 
 function getTime(date){
-    console.log(date);
     date = new Date(date);
-    console.log(date);
     let time = date.toTimeString().split(' GMT')[0];
-    console.log(time);
     return time.split('Z')[0];
 }
 

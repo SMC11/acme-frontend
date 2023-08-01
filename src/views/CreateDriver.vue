@@ -15,9 +15,6 @@ const newUser = ref({
 });
 let isAddDriver = ref(true);
 let isEditDriver = ref(false);
-const itineraryDay = ref([]);
-const site = ref([]);
-const hotel = ref([]);
 
 const snackbar = ref({
   value: false,

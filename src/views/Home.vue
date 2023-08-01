@@ -2,15 +2,12 @@
 import { onMounted } from "vue";
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import ItineraryCard from "../components/ItineraryCardComponent.vue";
 import UserServices from "../services/UserServices";
-import EmailServices from "../services/EmailServices";
 import CustomerServices from "../services/CustomerServices";
 import OrderServices from "../services/OrderServices";
 import DirectionServices from "../services/DirectionServices";
 import { jsPDF } from "jspdf";
 
-import noDeprecatedVOnNumberModifiers from "eslint-plugin-vue/lib/rules/no-deprecated-v-on-number-modifiers";
 import { nextTick } from "vue";
 
 const router = useRouter();
@@ -19,8 +16,6 @@ const clerks = ref([]);
 const drivers = ref([]);
 const orders = ref([]);
 const customers = ref([]);
-const itinerariesList = [ref([]), ref([]), ref([])];
-const subscribedItinerariesList = [ref([]), ref([]), ref([])];
 const selectedCustomer = ref(undefined);
 var currentCustomer = "";
 const selectedDriver = ref(undefined);
@@ -58,12 +53,6 @@ async function mounted(){
   user.value = JSON.parse(localStorage.getItem("user"));
   role.value = user.value.role;
 
-  itinerariesList[0].value = [];
-  itinerariesList[1].value = [];
-  itinerariesList[2].value = [];
-  subscribedItinerariesList[0].value = [];
-  subscribedItinerariesList[1].value = [];
-  subscribedItinerariesList[2].value = [];
   await getClerks();
   await getDrivers();
   await getCustomers();
@@ -279,62 +268,9 @@ async function handleDelete(clerkId) {
       snackbar.value.text = error.response.data.message;
     });
 }
-async function sendEmail(itineraryId) {
-  await ItineraryServices.getItinerary(itineraryId)
-    .then((response) => {
-      var deletedItinerary = response.data[0];
-      var subscribers = deletedItinerary.subscription.map(sub => {return sub.user;});
-      var subscriberEmails = subscribers.map(user => {return user.email;});
-      if(subscriberEmails.length == 0){
-        return;
-      }
-      var emailList = subscriberEmails.join(",");
-      var subject = "Deleted Itinerary for " + deletedItinerary.name;
-      var href = new URL(router.currentRoute.value.href, window.location.origin).href;
-      var body = "This itinerary is no longer available. Please check out our other available itineraries at : " + href;
-      EmailServices.sendEmail(emailList, subject, body)
-        .then((response) => {
-          snackbar.value.value = true;
-          snackbar.value.color = "green";
-          snackbar.value.text = "Emails Sent Successfully";
-          setTimeout(()=> {return;}, 2000);
-        })
-        .catch((error) => {
-          console.log(JSON.stringify(error));
-          snackbar.value.value = true;
-          snackbar.value.color = "error";
-          snackbar.value.text = error.text;
-        });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  
-}
-
-function navigateToItinerary(itineraryId) {
-  console.log(user.value);
-  if(user.value === null){
-    return;
-  }
-  if(role.value>0){
-    router.push({ name: "edititinerary", params: {id: itineraryId} });
-    return;
-  }
-  router.push({ name: "itinerary", params: {id: itineraryId} });
-}
-
 
 function openAdd() {
   router.push({ name: "createclerk" });
-}
-
-
-function viewHotels() {
-  router.push({ name: "viewhotels" });
-}
-function viewSites() {
-  router.push({ name: "viewsites" });
 }
 
 function getCustomerInfo(customerId){
@@ -790,43 +726,13 @@ function handleDownloadPDF(){
 
       <v-row align="center" class="mb-4">
         <v-col cols="10">
-          <!-- <v-card-title v-if="user !== null && role == 0" class="pl-0 text-h4 font-weight-bold"
-            >Subscribed Itineraries
-          </v-card-title> -->
+         
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
-          <!-- <v-btn v-if="user !== null && role > 0" color="accent" @click="openAdd()"
-            >Create Itinerary</v-btn> -->
+         
         </v-col>
       </v-row>
-      <v-row v-if="user !== null && role == 0" class="mb-4">
-        <v-col cols="4">
-      <ItineraryCard
-        v-for="itinerary in subscribedItinerariesList[0].value"
-        :key="itinerary.id"
-        :itinerary="itinerary"
-        @dblclick="navigateToItinerary(itinerary.id)"
-      />
-    </v-col>
-    
-        <v-col cols="4">
-      <ItineraryCard
-        v-for="itinerary in subscribedItinerariesList[1].value"
-        :key="itinerary.id"
-        :itinerary="itinerary"
-        @dblclick="navigateToItinerary(itinerary.id)"
-      />
-    </v-col>
-    
-        <v-col cols="4">
-      <ItineraryCard
-        v-for="itinerary in subscribedItinerariesList[2].value"
-        :key="itinerary.id"
-        :itinerary="itinerary"
-        @dblclick="navigateToItinerary(itinerary.id)"
-      />
-    </v-col>
-    </v-row>
+      
 
     <v-dialog persistent v-model="isOpenDirections" width="800">
         <v-card class="rounded-lg elevation-5">
