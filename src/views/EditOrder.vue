@@ -152,8 +152,8 @@ function getTime(date){
 }
 
 async function updateOrder() {
-  let pickUp = pickupDate.value +"T"+ pickupTime.value;
-  let delivery = deliveryDate.value +"T"+ deliveryTime.value;
+  let pickUp = pickupDate.value +" "+ pickupTime.value;
+  let delivery = deliveryDate.value +" "+ deliveryTime.value;
   if(new Date(pickUp) > new Date(delivery)){
     alert("Pick Up DateTime cannot be after Delivery DateTime");
     return;
