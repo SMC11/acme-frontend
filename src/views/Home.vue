@@ -7,6 +7,8 @@ import UserServices from "../services/UserServices";
 import EmailServices from "../services/EmailServices";
 import CustomerServices from "../services/CustomerServices";
 import OrderServices from "../services/OrderServices";
+import DirectionServices from "../services/DirectionServices";
+
 import noDeprecatedVOnNumberModifiers from "eslint-plugin-vue/lib/rules/no-deprecated-v-on-number-modifiers";
 
 const router = useRouter();
@@ -27,6 +29,9 @@ const snackbar = ref({
 });
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const map = ref(null);
+const isOpenDirections = ref(false);
+
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
@@ -168,6 +173,19 @@ async function deliverOrder(orderId){
     updateOrderState(orderId, state);
   });
   
+}
+
+async function showDirections(c1, c2, deliverToCustomer){
+  await DirectionServices.findRoute(c1, c2)
+  .then((response) => {
+    map.value = response.data.directions;
+    map.value += "\n Drop Off package at " + deliverToCustomer.instructions;
+    console.log(map);
+    isOpenDirections.value = true;
+  });
+}
+function closeShowDirections(){
+  isOpenDirections.value = false;
 }
 
 async function handleDeleteOrder(orderId) {
@@ -456,6 +474,13 @@ function getDateTime(date){
                   title="Done"
                   disabled
                 ></v-icon>
+                <v-icon
+                  v-if="user !== null && role == 0 && order.state < 3"
+                  size="large"
+                  icon="mdi-map"
+                  title="Directions"
+                  @click="showDirections(order.customerId, order.deliverToCustomerId, order.deliverToCustomer)"
+                ></v-icon>
               </td>
             </tr>
           </tbody>
@@ -658,6 +683,30 @@ function getDateTime(date){
       />
     </v-col>
     </v-row>
+
+    <v-dialog persistent v-model="isOpenDirections" width="800">
+        <v-card class="rounded-lg elevation-5">
+          <v-card-title class="headline mb-2">Directions</v-card-title>
+          <v-card-text>
+            <v-textarea
+              v-model="map"
+              label="Directions"
+              required
+            ></v-textarea>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              variant="filled"
+              color="primary"
+              auto-grow
+              @click="closeShowDirections()"
+              >Close</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
       <v-snackbar v-model="snackbar.value" rounded="pill">
         {{ snackbar.text }}
 
