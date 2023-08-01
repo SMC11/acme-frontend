@@ -39,7 +39,7 @@ const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const map = ref(null);
 const isOpenDirections = ref(false);
-
+const finalPriceTotal = ref(0.00);
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
@@ -106,11 +106,11 @@ async function getOrders() {
   if(!selectedDriver.value){
     currentDriver = "";
   }
-  orders.value = [];
   if (user.value !== null && user.value.role >= 0) {
     await OrderServices.getOrders()
       .then((response) => {
-        
+        orders.value = [];
+        finalPriceTotal.value = 0.00;
         for(let i=0; i<response.data.length; i++){
           response.data[i].pickupTime = getDateTime(response.data[i].pickupTime);
           response.data[i].deliveryTime = getDateTime(response.data[i].deliveryTime);
@@ -120,10 +120,14 @@ async function getOrders() {
             if(response.data[i].customerId == selectedCustomer.value.id){
               if(selectedDriver.value){
                 if(response.data[i].userId == selectedDriver.value.id){
-                  orders.value.push(response.data[i])
+                  orders.value.push(response.data[i]);
+                  finalPriceTotal.value+=parseFloat(response.data[i].finalBill);
+                  continue;
                 }
               }else{
                 orders.value.push(response.data[i]);
+                finalPriceTotal.value+=parseFloat(response.data[i].finalBill);
+                continue;
               }
             }
           }else if(selectedDriver.value){
@@ -132,13 +136,19 @@ async function getOrders() {
               if(selectedCustomer.value){
                 if(response.data[i].customerId == selectedCustomer.value.id){
                   orders.value.push(response.data[i])
+                  finalPriceTotal.value+=parseFloat(response.data[i].finalBill);
+                  continue;
                 }
               }else{
                 orders.value.push(response.data[i]);
+                finalPriceTotal.value+=parseFloat(response.data[i].finalBill);
+                continue;
               }
             }
           }else{
             orders.value.push(response.data[i]);
+            finalPriceTotal.value+=parseFloat(response.data[i].finalBill);
+            continue;
           }
         }
       })
@@ -454,6 +464,7 @@ function handleDownloadPDF(){
       <v-row v-if="user !== null" class="mb-4">
         <v-col cols="10">
           <v-autocomplete
+          v-if="user !== null && role > 0"
             v-model="selectedCustomer"
             :items="customers"
             item-title="name"
@@ -479,6 +490,7 @@ function handleDownloadPDF(){
         </v-col>
         <v-col cols="10">
           <v-autocomplete
+          v-if="user !== null && role > 1"
             v-model="selectedDriver"
             :items="drivers"
             item-title="firstName"
@@ -602,6 +614,18 @@ function handleDownloadPDF(){
                   @click="showDirections(order.customerId, order.deliverToCustomerId, order.deliverToCustomer)"
                 ></v-icon>
               </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>{{finalPriceTotal.toFixed(2)}}</td>
+              <td></td>
+              <td></td>
+              <td></td>
             </tr>
           </tbody>
         </v-table>
