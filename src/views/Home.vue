@@ -8,8 +8,10 @@ import EmailServices from "../services/EmailServices";
 import CustomerServices from "../services/CustomerServices";
 import OrderServices from "../services/OrderServices";
 import DirectionServices from "../services/DirectionServices";
+import { jsPDF } from "jspdf";
 
 import noDeprecatedVOnNumberModifiers from "eslint-plugin-vue/lib/rules/no-deprecated-v-on-number-modifiers";
+import { nextTick } from "vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -19,6 +21,12 @@ const orders = ref([]);
 const customers = ref([]);
 const itinerariesList = [ref([]), ref([]), ref([])];
 const subscribedItinerariesList = [ref([]), ref([]), ref([])];
+const selectedCustomer = ref(undefined);
+var currentCustomer = "";
+const selectedDriver = ref(undefined);
+var currentDriver = "";
+
+const isStatement = ref(false);
 
 const role = ref(0);
 const user = ref(null);
@@ -84,14 +92,54 @@ async function getClerks() {
 }
 
 async function getOrders() {
+  if(selectedCustomer.value && selectedCustomer.value.id == currentCustomer){
+    if(selectedDriver.value && selectedDriver.value.id == currentDriver){
+      return;
+    }
+  }
+  if(selectedCustomer.value){
+    currentCustomer = selectedCustomer.value.id;
+  }
+  if(!selectedCustomer.value){
+    currentCustomer = "";
+  }
+  if(!selectedDriver.value){
+    currentDriver = "";
+  }
+  orders.value = [];
   if (user.value !== null && user.value.role >= 0) {
     await OrderServices.getOrders()
       .then((response) => {
-        orders.value = response.data;
-        for(let i=0; i<orders.value.length; i++){
-          orders.value[i].pickupTime = getDateTime(orders.value[i].pickupTime);
-          orders.value[i].deliveryTime = getDateTime(orders.value[i].deliveryTime);
-          orders.value[i].updatedAt = getDateTime(orders.value[i].updatedAt);
+        
+        for(let i=0; i<response.data.length; i++){
+          response.data[i].pickupTime = getDateTime(response.data[i].pickupTime);
+          response.data[i].deliveryTime = getDateTime(response.data[i].deliveryTime);
+          response.data[i].updatedAt = getDateTime(response.data[i].updatedAt);
+          if(selectedCustomer.value){
+            console.log(response.data[i].customerId, selectedCustomer.value.id);
+            if(response.data[i].customerId == selectedCustomer.value.id){
+              if(selectedDriver.value){
+                if(response.data[i].userId == selectedDriver.value.id){
+                  orders.value.push(response.data[i])
+                }
+              }else{
+                orders.value.push(response.data[i]);
+              }
+            }
+          }else if(selectedDriver.value){
+            console.log(response.data[i].userId, selectedDriver.value.id);
+            if(response.data[i].userId == selectedDriver.value.id){
+              if(selectedCustomer.value){
+                if(response.data[i].customerId == selectedCustomer.value.id){
+                  orders.value.push(response.data[i])
+                }
+              }else{
+                orders.value.push(response.data[i]);
+              }
+            }
+          }else{
+            orders.value.push(response.data[i]);
+          }
         }
       })
       .catch((error) => {
@@ -337,6 +385,31 @@ function getDateTime(date){
   + " " + date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
   ;
 }
+
+function handleDownloadPDF(){
+  isStatement.value = true;
+  nextTick(() => {
+    var id = '#orders-table';
+    // Default export is a4 paper, portrait, using millimeters for units
+    const doc = new jsPDF({
+      orientation: "landscape",
+    });
+    var elementHTML = document.querySelector(id);
+
+    doc.html(elementHTML, {
+        callback: function(doc) {
+            // Save the PDF
+            doc.save('statement.pdf');
+        },
+        x: 15,
+        y: 15,
+        width: 250, //target width in the PDF document
+        windowWidth: 1200 //window width in CSS pixels
+    });
+    isStatement.value = false;
+  });
+  
+}
 </script>
 
 <template>
@@ -379,10 +452,32 @@ function getDateTime(date){
             >Orders
           </v-card-title>
       <v-row v-if="user !== null" class="mb-4">
-        <v-col cols="11">
-      
+        <v-col cols="10">
+          <v-autocomplete
+            v-model="selectedDriver"
+            :items="drivers"
+            item-title="firstName"
+            item-value="id"
+            label="Select Driver"
+            placeholder="Search Drivers"
+            persistent-hint
+            return-object
+            auto-select-first
+            :on-change="getOrders()"
+            hide-selected
+            clearable
+          ></v-autocomplete>
         </v-col>
-        <v-table theme="dark">
+        <v-col cols="2">          
+          <v-icon
+                  v-if="user !== null && role == 2"
+                  size="x-large"
+                  icon="mdi-file-pdf-box"
+                  title="Download PDF"
+                  @click="handleDownloadPDF()"
+                ></v-icon>
+        </v-col>
+        <v-table theme="dark" id="orders-table">
           <thead>
             <tr>
               <th class="text-left">
@@ -406,13 +501,13 @@ function getDateTime(date){
               <th class="text-left">
                 Final Price
               </th>
-              <th class="text-left">
+              <th class="text-left" v-if="!isStatement">
                 Last State Change At
               </th>
-              <th v-if="role > 0" class="text-left">
+              <th v-if="role > 0 && !isStatement" class="text-left">
                 Driver
               </th>
-              <th class="text-left">
+              <th class="text-left" v-if="!isStatement">
                 Actions
               </th>
             </tr>
@@ -429,17 +524,17 @@ function getDateTime(date){
               <td>{{ order.blocks }}</td>
               <td>{{ order.quotedPrice }}</td>
               <td>{{ order.finalBill }}</td>
-              <td>{{ order.updatedAt }}</td>
-              <td v-if="role > 0">{{  }}</td>
-              <td><v-icon
-                  v-if="user !== null && role > 0 && order.state < 1"
+              <td v-if="!isStatement">{{ order.updatedAt }}</td>
+              <td v-if="role > 0 && !isStatement">{{ order.user? ( order.user.role == 0? order.user.firstName : "-"): "-"}}</td>
+              <td v-if="!isStatement"><v-icon
+                  v-if="user !== null && role > 0 && order.state < 2"
                   size="large"
                   icon="mdi-delete"
                   title="Delete"
                   @click="handleDeleteOrder(order.id)"
                 ></v-icon>&nbsp;
                 <v-icon
-                  v-if="user !== null && role > 0 && order.state < 1"
+                  v-if="user !== null && role > 0 && order.state < 2"
                   size="large"
                   icon="mdi-pencil"
                   title="Edit"
